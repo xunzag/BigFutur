@@ -202,6 +202,7 @@ function partials() {
           .replace('<!--@footer-->', footer())
           .replace('<!--@chrome-->', chrome())
           .replace('<!--@base404-->', PREVIEW ? '' : '<base href="/">')
+          .replace(/<!--@markparts:([\w-]+)-->/g, (_, c) => markSVG(c, { animate: true }))
           .replace(/<!--@mark:?([\w-]*)-->/g, (_, c) => markSVG(c))
           .replace(/<!--@icon:(\w+)-->/g, (_, n) => ICONS[n])
           .replace(/<!--@services-options-->/g, SERVICES.map(([v, l]) => `<option value="${v}">${l.replace('&', '&amp;')}</option>`).join(''))

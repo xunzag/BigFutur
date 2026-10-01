@@ -1,119 +1,66 @@
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-/* Hero canvas: a forward "warp" of particles over a perspective floor grid.
-   Cheap 2D canvas, capped DPR, pauses off-screen. */
-function heroCanvas({ reduced, finePointer }) {
-  const canvas = $('[data-hero-canvas]');
-  if (!canvas) return { boost: () => {} };
-  const ctx = canvas.getContext('2d');
-  let w = 0, h = 0, dpr = 1, running = true, raf = 0;
-  const N = innerWidth < 760 ? 260 : 520;
-  const pts = [];
-  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-  let speed = 1, targetSpeed = 1, gridOffset = 0;
+/* Hero: one-shot assembly of the BF mark + headline, then a light word cycler.
+   Only transform/opacity are animated, so it stays smooth without GPU acceleration. */
+function hero({ gsap, SplitText, tl, reduced, finePointer }) {
+  const sec = $('[data-hero]');
+  if (!sec) return;
+  const title = $('[data-hero-title]', sec);
+  const fades = $$('[data-hero-fade]', sec);
+  const stage = $('[data-hero-stage]', sec);
+  const disc = $('.hero__mark .mark__disc', sec);
+  const parts = $$('.hero__mark [data-part]', sec);
+  const words = $$('[data-word]', sec);
+  const bar = $('[data-cycler-bar]', sec);
 
-  const rand = (a, b) => a + Math.random() * (b - a);
-  const spawn = (p, far = true) => {
-    p.x = rand(-1, 1) * 1.6;
-    p.y = rand(-1, 1) * 1.0;
-    p.z = far ? rand(0.6, 1) : rand(0.05, 1);
-    p.red = Math.random() < 0.14;
-    p.px = null; p.py = null;
+  // --- word cycler ---
+  let i = 0, cycle = null, visible = true;
+  words[0].classList.add('is-on');
+  const HOLD = 2.4;
+  const step = () => {
+    const cur = words[i], next = words[(i = (i + 1) % words.length)];
+    gsap.to(cur, { yPercent: -110, duration: 0.6, ease: 'expo.inOut', onComplete: () => { cur.classList.remove('is-on'); gsap.set(cur, { clearProps: 'transform' }); } });
+    gsap.fromTo(next, { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: 'expo.inOut', onStart: () => next.classList.add('is-on') });
+    runBar();
   };
-  for (let i = 0; i < N; i++) { const p = {}; spawn(p, false); pts.push(p); }
+  const runBar = () => gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: HOLD + 0.6, ease: 'none' });
+  const start = () => { if (cycle || reduced) return; runBar(); cycle = gsap.delayedCall(HOLD + 0.6, function loop() { if (visible) step(); cycle = gsap.delayedCall(HOLD + 0.6, loop); }); };
+  // pause everything while the hero is off screen
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; sec.classList.toggle('is-idle', !visible); }).observe(sec);
 
-  function resize() {
-    dpr = Math.min(devicePixelRatio || 1, 1.75);
-    w = canvas.clientWidth; h = canvas.clientHeight;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (reduced) { gsap.set(bar, { scaleX: 1 }); return; }
+
+  // --- load sequence ---
+  const split = SplitText.create(title, { type: 'lines', mask: 'lines', linesClass: 'line' });
+  gsap.set(fades, { opacity: 0, y: 24 });
+  gsap.set(stage, { opacity: 0 });
+  const from = [ // where each glyph piece flies in from: slash, B, lower bar, upper bar
+    { x: -60, y: 90, rotate: -25 }, { x: -110, y: -30, rotate: 20 }, { x: 120, y: 60, rotate: 15 }, { x: 140, y: -70, rotate: -20 },
+  ];
+  tl.add('hero', '-=0.45')
+    .from(split.lines, { yPercent: 110, duration: 1.15, ease: 'expo.out', stagger: 0.1 }, 'hero')
+    .set(stage, { opacity: 1 }, 'hero')
+    .from('.hero__halo', { scale: 0.3, opacity: 0, duration: 1.6, ease: 'expo.out' }, 'hero')
+    .from(disc, { scale: 0, transformOrigin: '50% 50%', duration: 1.1, ease: 'back.out(1.5)' }, 'hero+=0.1')
+    .from(parts, { x: (k) => from[k].x, y: (k) => from[k].y, rotate: (k) => from[k].rotate, opacity: 0, transformOrigin: '50% 50%', duration: 1.1, ease: 'expo.out', stagger: 0.09 }, 'hero+=0.35')
+    .from('.hero__ring', { opacity: 0, scale: 0.85, duration: 1.2, ease: 'expo.out' }, 'hero+=0.6')
+    .to(fades, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: 0.07 }, 'hero+=0.35')
+    .add(start, 'hero+=1.2');
+
+  // gentle tilt toward the pointer (desktop only, transform only)
+  if (finePointer) {
+    const rx = gsap.quickTo(stage, 'rotationY', { duration: 0.8, ease: 'power3' });
+    const ry = gsap.quickTo(stage, 'rotationX', { duration: 0.8, ease: 'power3' });
+    gsap.set(stage, { transformPerspective: 900 });
+    sec.addEventListener('pointermove', (e) => { rx((e.clientX / innerWidth - 0.5) * 14); ry(-(e.clientY / innerHeight - 0.5) * 14); });
+    sec.addEventListener('pointerleave', () => { rx(0); ry(0); });
   }
 
-  function frame() {
-    mouse.x += (mouse.tx - mouse.x) * 0.05;
-    mouse.y += (mouse.ty - mouse.y) * 0.05;
-    speed += (targetSpeed - speed) * 0.06;
-    const cx = w * 0.5 + mouse.x * w * 0.06;
-    const cy = h * 0.42 + mouse.y * h * 0.05;
-    const fov = Math.min(w, h) * 0.55;
-    ctx.clearRect(0, 0, w, h);
-
-    // floor grid
-    const horizon = cy + h * 0.06;
-    gridOffset = (gridOffset + 0.004 * speed) % 1;
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 18; i++) {
-      const t = (i + gridOffset) / 18;            // 0..1 toward viewer
-      const y = horizon + Math.pow(t, 2.4) * (h - horizon + 40);
-      ctx.strokeStyle = `rgba(236,32,39,${0.04 + t * 0.28})`;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-    }
-    for (let i = -14; i <= 14; i++) {
-      const xb = cx + i * (w / 9);
-      ctx.strokeStyle = `rgba(255,255,255,${0.05 - Math.abs(i) * 0.002})`;
-      ctx.beginPath(); ctx.moveTo(cx + i * 6, horizon); ctx.lineTo(xb + (xb - cx) * 1.6, h + 40); ctx.stroke();
-    }
-    // horizon fade
-    const g = ctx.createLinearGradient(0, horizon - 60, 0, horizon + 120);
-    g.addColorStop(0, 'rgba(11,11,12,0)'); g.addColorStop(0.45, 'rgba(11,11,12,0.85)'); g.addColorStop(1, 'rgba(11,11,12,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, horizon - 60, w, 180);
-
-    // particles
-    for (const p of pts) {
-      p.z -= 0.0032 * speed;
-      if (p.z <= 0.02) { spawn(p); continue; }
-      const sx = cx + (p.x / p.z) * fov;
-      const sy = cy + (p.y / p.z) * fov;
-      if (sx < -50 || sx > w + 50 || sy < -50 || sy > h + 50) { spawn(p); continue; }
-      const a = Math.min(1, (1 - p.z) * 1.4);
-      const size = (1 - p.z) * 2.2 + 0.3;
-      if (p.px !== null && speed > 1.3) {
-        ctx.strokeStyle = p.red ? `rgba(236,32,39,${a})` : `rgba(255,255,255,${a * 0.6})`;
-        ctx.lineWidth = size;
-        ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(sx, sy); ctx.stroke();
-      }
-      ctx.fillStyle = p.red ? `rgba(236,32,39,${a})` : `rgba(255,255,255,${a * 0.85})`;
-      ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
-      p.px = sx; p.py = sy;
-    }
-    if (running) raf = requestAnimationFrame(frame);
-  }
-
-  resize();
-  addEventListener('resize', resize);
-  if (finePointer) addEventListener('pointermove', (e) => { mouse.tx = e.clientX / innerWidth - 0.5; mouse.ty = e.clientY / innerHeight - 0.5; }, { passive: true });
-
-  if (reduced) { speed = 0.0001; frame(); running = false; return { boost: () => {} }; }
-  const io = new IntersectionObserver(([en]) => {
-    const vis = en.isIntersecting && !document.hidden;
-    if (vis && !running) { running = true; raf = requestAnimationFrame(frame); }
-    if (!vis) { running = false; cancelAnimationFrame(raf); }
-  });
-  io.observe(canvas);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { running = false; cancelAnimationFrame(raf); } });
-  raf = requestAnimationFrame(frame);
-  return { boost: (v) => (targetSpeed = v) };
-}
-
-function hero({ gsap, SplitText, tl, reduced, ScrollTrigger }, warp) {
-  const title = $('[data-hero-title]');
-  const fades = $$('[data-hero-fade]');
-  if (reduced) return;
-  const split = SplitText.create(title, { type: 'lines,words', mask: 'lines', linesClass: 'line' });
-  gsap.set(fades, { opacity: 0, y: 26 });
-  tl.add(() => warp.boost(6), '-=0.6')
-    .from(split.words, { yPercent: 120, rotate: 4, duration: 1.3, ease: 'expo.out', stagger: 0.045 }, '-=0.35')
-    .add(() => warp.boost(1), '-=0.6')
-    .to(fades, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.07 }, '-=1')
-    .from('.hero__glow', { scale: 0.4, opacity: 0, duration: 2, ease: 'expo.out' }, 0.2)
-    .from('.hero__bottom', { '--line': 0, borderTopColor: 'rgba(255,255,255,0)', duration: 1 }, '<');
-
-  // scroll-out: title rises & fades, warp accelerates
-  gsap.timeline({ scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true,
-    onUpdate: (s) => warp.boost(1 + s.progress * 5) } })
-    .to('.hero__content', { yPercent: -18, opacity: 0.1, ease: 'none' }, 0)
-    .to('.hero__glow', { scale: 1.5, opacity: 0.3, ease: 'none' }, 0);
+  // scroll-out: text lifts away, the mark turns and shrinks a little
+  gsap.timeline({ scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom top', scrub: true } })
+    .to('.hero__text', { yPercent: -14, opacity: 0.15, ease: 'none' }, 0)
+    .to('.hero__art', { yPercent: 10, rotate: 18, scale: 0.9, ease: 'none' }, 0);
 }
 
 /* Services: pin + horizontal scroll on wide screens */
@@ -268,8 +215,7 @@ function cta({ gsap, reduced }) {
 }
 
 export default function init(ctx) {
-  const warp = heroCanvas(ctx);
-  hero(ctx, warp);
+  hero(ctx);
   dive(ctx);
   horizontal(ctx);
   network(ctx);

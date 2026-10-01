@@ -30,33 +30,45 @@
 
   <!-- HERO -->
   <section class="hero" data-hero>
-    <canvas class="hero__canvas" data-hero-canvas aria-hidden="true"></canvas>
-    <div class="hero__glow" aria-hidden="true"></div>
-    <div class="hero__grain" aria-hidden="true"></div>
-    <div class="wrap hero__content">
-      <div class="hero__top">
+    <div class="hero__bg" aria-hidden="true"></div>
+    <div class="wrap hero__grid">
+      <div class="hero__text">
         <p class="eyebrow" data-hero-fade>Digital agency · Karachi · London · Dubai</p>
-        <span class="hero__scroll" data-hero-fade aria-hidden="true"><i></i>Scroll</span>
-      </div>
-      <h1 data-hero-title>
-        <span class="hl">Build Your Brand.</span>
-        <span class="hl">Grow Your <em>Network.</em></span>
-        <span class="hl">Move Your Business <span class="accent">Forward.</span></span>
-      </h1>
-      <div class="hero__bottom">
-        <div>
-          <p class="lead" data-hero-fade>Big Futur Digital helps businesses stay active on social media, build credibility on LinkedIn, and connect with the right audience. We also develop websites, online stores, mobile apps, and AI solutions around your business needs.</p>
-          <div class="btns" style="margin-top:28px" data-hero-fade>
-            <a class="btn btn--red" href="@/contact/" data-magnetic><span data-roll>Discuss Your Project</span><!--@icon:arrow--></a>
-            <a class="btn btn--ghost" href="@/services/" data-magnetic><span data-roll>Explore Our Services</span></a>
-          </div>
+        <h1 data-hero-title>
+          <span class="hl">Build Your Brand.</span>
+          <span class="hl">Grow Your <em>Network.</em></span>
+          <span class="hl">Move Your Business</span>
+          <span class="hl accent">Forward.</span>
+        </h1>
+        <div class="cycler" data-hero-fade>
+          <span class="cycler__label">We do</span>
+          <span class="cycler__window" aria-hidden="true">
+            <span class="cycler__word" data-word>Social Media</span>
+            <span class="cycler__word" data-word>LinkedIn</span>
+            <span class="cycler__word" data-word>Lead Generation</span>
+            <span class="cycler__word" data-word>Websites</span>
+            <span class="cycler__word" data-word>Online Stores</span>
+            <span class="cycler__word" data-word>Mobile Apps</span>
+            <span class="cycler__word" data-word>AI</span>
+          </span>
+          <span class="sr-only">Social media, LinkedIn, lead generation, websites, online stores, mobile apps and AI.</span>
+          <span class="cycler__bar" aria-hidden="true"><i data-cycler-bar></i></span>
         </div>
-        <div class="hero__badge" data-hero-fade aria-hidden="true">
-          <svg class="ring" viewBox="0 0 100 100"><defs><path id="ringpath" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0"/></defs><text><textPath href="#ringpath" textLength="236" lengthAdjust="spacing">Big Futur Digital · Karachi · London · Dubai ·</textPath></text></svg>
-          <!--@mark-->
+        <p class="lead" data-hero-fade>Big Futur Digital helps businesses stay active on social media, build credibility on LinkedIn, and connect with the right audience. We also develop websites, online stores, mobile apps, and AI solutions around your business needs.</p>
+        <div class="btns" data-hero-fade>
+          <a class="btn btn--red" href="@/contact/" data-magnetic><span data-roll>Discuss Your Project</span><!--@icon:arrow--></a>
+          <a class="btn btn--ghost" href="@/services/" data-magnetic><span data-roll>Explore Our Services</span></a>
+        </div>
+      </div>
+      <div class="hero__art" aria-hidden="true">
+        <div class="hero__stage" data-hero-stage>
+          <span class="hero__halo"></span>
+          <svg class="hero__ring" viewBox="0 0 100 100"><defs><path id="ringpath" d="M50 50m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"/></defs><text><textPath href="#ringpath" textLength="287" lengthAdjust="spacing">Big Futur Digital · Karachi · London · Dubai · Social · Web · AI ·</textPath></text></svg>
+          <!--@markparts:hero__mark-->
         </div>
       </div>
     </div>
+    <span class="hero__scroll" data-hero-fade aria-hidden="true"><i></i>Scroll</span>
   </section>
 
   <!-- DIVE: zoom through the mark -->
