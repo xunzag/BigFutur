@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Contact Big Futur Digital | Karachi, London &amp; Dubai</title>
+  <meta name="description" content="Contact Big Futur Digital for social media, LinkedIn, websites, mobile apps, and AI development. Offices in Karachi, London, and Dubai.">
+<!--@headcommon-->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"{{site}}/"},{"@type":"ListItem","position":2,"name":"Contact Us","item":"{{site}}/contact/"}]}</script>
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body data-page="contact">
+<!--@header:contact-->
+<main id="main">
+  <section class="phero">
+    <!--@mark:phero__mark-->
+    <div class="wrap">
+      <p class="eyebrow" data-hero-fade>Contact Us</p>
+      <h1 style="margin-top:22px">Let's Discuss Your Business <em>Goals</em></h1>
+      <div class="phero__lead">
+        <p class="lead" data-hero-fade>Tell us what you need help with. We will review your requirements and outline the scope, next steps, and pricing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap contact-grid">
+      <aside class="contact-side">
+        <div data-reveal>
+          <h2>Business Enquiries</h2>
+          <a class="big-mail" href="mailto:hello@bigfuturdigital.com">hello@bigfuturdigital.com</a>
+        </div>
+        <div data-reveal>
+          <h2>Careers &amp; HR</h2>
+          <p>For job applications and HR enquiries, email <a href="mailto:hr@bigfuturdigital.com">hr@bigfuturdigital.com</a>.</p>
+        </div>
+        <div data-reveal>
+          <h2>Our Offices</h2>
+          <div class="footer__offices" style="display:grid;gap:18px">
+            <p><strong style="color:#fff">Pakistan Head Office</strong><br>Anum Empire, Shahra-e-Faisal, Jinnah Housing Society P.E.C.H.S., Karachi, 74200</p>
+            <p><strong style="color:#fff">UK Office</strong><br>30 Riverhead Close, London, England, E17 5PY</p>
+            <p><strong style="color:#fff">UAE Office</strong><br>Office 2309, Clover Bay Tower, Business Bay, Dubai, UAE.</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Set data-endpoint to your form handler (e.g. a server route or form service). See README. -->
+      <form class="form" data-form data-endpoint="" novalidate data-reveal>
+        <h2>Tell Us About Your Project</h2>
+        <p>Share a few details so we can understand what you need.</p>
+        <div class="form__grid">
+          <div class="field">
+            <label for="f-name">Full Name*</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="e-name">
+            <span class="field__err" id="e-name" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="f-company">Company Name <small>— optional</small></label>
+            <input id="f-company" name="company" type="text" autocomplete="organization">
+          </div>
+          <div class="field">
+            <label for="f-email">Email Address*</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+            <span class="field__err" id="e-email" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label for="f-phone">Phone Number <small>— optional</small></label>
+            <input id="f-phone" name="phone" type="tel" autocomplete="tel">
+          </div>
+          <div class="field field--full">
+            <label for="f-service">Service Required*</label>
+            <select id="f-service" name="service" required aria-describedby="e-service">
+              <option value="">Select a service</option>
+              <!--@services-options-->
+              <option value="multiple-services">Multiple Services</option>
+              <option value="not-sure-yet">Not Sure Yet</option>
+            </select>
+            <span class="field__err" id="e-service" aria-live="polite"></span>
+          </div>
+          <div class="field field--full">
+            <label for="f-details">Project Details*</label>
+            <textarea id="f-details" name="details" required aria-describedby="e-details"></textarea>
+            <span class="field__err" id="e-details" aria-live="polite"></span>
+          </div>
+          <div class="form__hp" aria-hidden="true"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <div class="check">
+            <input id="f-consent" name="consent" type="checkbox" required aria-describedby="e-consent">
+            <label for="f-consent">I agree that Big Futur Digital may use these details to respond to my enquiry. <button type="button" data-open-privacy>Read our Privacy Notice.</button></label>
+          </div>
+          <span class="field__err" id="e-consent" aria-live="polite" style="grid-column:1/-1"></span>
+          <div class="form__actions">
+            <button class="btn btn--red" type="submit" data-magnetic><span data-roll>Send Enquiry</span><!--@icon:arrow--></button>
+            <p class="form__status" data-status role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+<!--@footer-->
+<!--@chrome-->
+</body>
+</html>
