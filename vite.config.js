@@ -9,7 +9,13 @@ import { readFileSync } from 'node:fs';
  *    so the build works from any folder (and with PREVIEW=1, as plain index.html files).
  */
 const PREVIEW = process.env.PREVIEW === '1';
-const SITE = 'https://bigfuturdigital.com';
+// Public site URL used for canonical links, share images, sitemap and robots.txt.
+// Order: SITE_URL env var (set this when the custom domain goes live) ->
+// Vercel's production domain (provided automatically at build time) -> fallback.
+const SITE = (process.env.SITE_URL
+  || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
+  || 'https://big-futur.vercel.app').replace(/\/+$/, '');
+const PAGES = ['', 'services/', 'about/', 'contact/'];
 const markParts = JSON.parse(readFileSync(resolve(__dirname, 'partials-mark.json'), 'utf8'));
 
 export const markSVG = (cls = '', { animate = false } = {}) => animate ? `
@@ -143,8 +149,20 @@ ${markSymbol()}
   </form>
 </dialog>`;
 
-const headCommon = (title, desc) => `
+const OG_ALT = {
+  home: 'Big Futur Digital: Build Your Brand. Grow Your Network. Move Your Business Forward.',
+  services: 'Big Futur Digital services: social media, LinkedIn, websites, mobile apps and AI',
+  about: 'About Big Futur Digital, with offices in Karachi, London and Dubai',
+  contact: 'Contact Big Futur Digital at hello@bigfuturdigital.com',
+};
+const headCommon = (title, desc, page) => `
   <link rel="canonical" href="{{canonical}}">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="author" content="Big Futur Digital">
+  <meta name="application-name" content="Big Futur Digital">
+  <meta name="apple-mobile-web-app-title" content="Big Futur">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0b0b0c">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
@@ -152,11 +170,35 @@ const headCommon = (title, desc) => `
   <link rel="manifest" href="/site.webmanifest">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Big Futur Digital">
+  <meta property="og:locale" content="en_GB">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${desc}">
   <meta property="og:url" content="{{canonical}}">
-  <meta property="og:image" content="{{site}}/og-image.png">
-  <meta name="twitter:card" content="summary_large_image">`;
+  <meta property="og:image" content="{{site}}/og/${page}.jpg">
+  <meta property="og:image:secure_url" content="{{site}}/og/${page}.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${OG_ALT[page]}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${title}">
+  <meta name="twitter:description" content="${desc}">
+  <meta name="twitter:image" content="{{site}}/og/${page}.jpg">
+  <meta name="twitter:image:alt" content="${OG_ALT[page]}">`;
+
+// sitemap.xml + robots.txt are generated so they always use the current SITE
+function seoFiles() {
+  return {
+    name: 'bf-seo-files',
+    apply: 'build',
+    generateBundle() {
+      const today = new Date().toISOString().slice(0, 10);
+      const urls = PAGES.map((p) => `  <url><loc>${SITE}/${p}</loc><lastmod>${today}</lastmod></url>`).join('\n');
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` });
+      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n` });
+    },
+  };
+}
 
 function rewriteLinks(html, depth) {
   const root = depth === 0 ? './' : '../'.repeat(depth);
@@ -196,7 +238,8 @@ function partials() {
         const urlPath = rel.replace(/index\.html$/, '');
         const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
         const desc = (html.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
-        html = html.replace('<!--@headcommon-->', headCommon(title, desc));
+        const page = (rel.split('/')[0] === 'index.html' ? 'home' : rel.split('/')[0]) || 'home';
+        html = html.replace('<!--@headcommon-->', headCommon(title, desc, page));
         html = html
           .replace(/<!--@header:(\w+)-->/, (_, p) => header(p))
           .replace('<!--@footer-->', footer())
@@ -217,7 +260,7 @@ function partials() {
 
 export default defineConfig({
   base: './',
-  plugins: [partials(), preloadFonts()],
+  plugins: [partials(), preloadFonts(), seoFiles()],
   build: {
     outDir: PREVIEW ? 'dist-preview' : 'dist',
     emptyOutDir: true,

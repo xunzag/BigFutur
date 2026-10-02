@@ -26,7 +26,7 @@ Import the repo; settings are in vercel.json (Framework: Vite, Build: `npm run b
 - src/style.css: design tokens and all styles
 - src/main.js: smooth scroll, page transitions, reveals, cursor, nav
 - src/home.js: hero warp canvas, horizontal services, network graph, stacking cards, process
-- public/: favicons, social image, robots.txt, sitemap.xml (regenerate icons with `node scripts-gen-assets.mjs`)
+- public/: favicons and per-page share images in public/og/ (regenerate with `node scripts-gen-assets.mjs`). robots.txt and sitemap.xml are generated at build time.
 - partials-mark.json: the BF mark traced to SVG paths from "BF logos/1.png"
 
 ## Before launch
@@ -34,5 +34,5 @@ Import the repo; settings are in vercel.json (Framework: Vite, Build: `npm run b
   (server route or form service) that emails hello@bigfuturdigital.com. Until then the form
   validates and then opens the visitor's email app instead of sending.
 - Privacy notice text in vite.config.js is a draft; replace with the approved wording.
-- Site URL is assumed to be https://bigfuturdigital.com (SITE in vite.config.js, robots.txt, sitemap.xml).
+- Site URL comes from the `SITE_URL` env var, else Vercel's production domain, else https://big-futur.vercel.app. When the custom domain goes live, set `SITE_URL=https://yourdomain.com` in Vercel and redeploy.
 - Serve 404.html as the not-found page with a real 404 status.
